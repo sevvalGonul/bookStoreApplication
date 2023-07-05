@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">BookStore</string>
+    <string name="fiyat">Fiyat:</string>
+    <string name="price">Book Price:</string>
+    <string name="author_text">Yazar: </string>
+    <string name="book_info_prompr">Kitap Bilgilerini Girin</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+</resources>
