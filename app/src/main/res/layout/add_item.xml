@@ -71,14 +71,6 @@
             android:textColor="@color/purple_500"
             android:textSize="18sp"
             android:textStyle="bold" />
-        <Button
-            android:id="@+id/addImageBtn"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:text="Görsel EKLE"
-            android:textStyle="bold"/>
-
 
     </LinearLayout>
 

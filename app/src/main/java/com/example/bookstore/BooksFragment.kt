@@ -14,6 +14,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.bookstore.api.BookApiService
 import com.example.bookstore.databinding.FragmentBooksBinding
 import com.example.bookstore.model.BookData
+import com.example.bookstore.model.Deneme
+import com.example.bookstore.model.PostBook
 import com.example.bookstore.view.BookAdapter
 import retrofit2.Call
 import retrofit2.Callback
@@ -25,7 +27,8 @@ class BooksFragment : Fragment() {
     private lateinit var linearLayoutManager: LinearLayoutManager
     private lateinit var rvAdapter : BookAdapter
     private lateinit var apiService : BookApiService
-
+    private lateinit var bookList : List<BookData>
+    private val defaultBookImgURL = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQbXCpiYKfm11YUjU715AE4xto0XO6fzBiL8Q&usqp=CAU"
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
     }
@@ -54,7 +57,7 @@ class BooksFragment : Fragment() {
 
         //initRecyclerView(bookList)
 
-        //binding.addButton.setOnClickListener { addNewBookInfo(bookList) }
+        binding.addButton.setOnClickListener { addNewBookInfo() }
 
     }
 
@@ -63,27 +66,29 @@ class BooksFragment : Fragment() {
         //aşağıda Liste halinde kitaplar alınıyor
         call.enqueue(object: Callback<List<BookData>> {
             override fun onResponse(call: Call<List<BookData>>, response: Response<List<BookData>>) {
+                binding.progressBarBooks.visibility = View.GONE
                 if(response.code() == 200) {
                     var myResponse: List<BookData>? = response.body()
                     print(myResponse)
-                    initRecyclerView(myResponse!!)
+                    bookList = myResponse!!
+                    initRecyclerView(bookList)
                 }
             }
 
             override fun onFailure(call: Call<List<BookData>>, t: Throwable) {
+                binding.progressBarBooks.visibility = View.GONE
                 Toast.makeText(requireContext(),"Bir hata oluştu :(", Toast.LENGTH_SHORT).show()
             }
         })
     }
 
-    private fun addNewBookInfo(bookList : ArrayList<BookData>) {
+    private fun addNewBookInfo() {
         val inflter = LayoutInflater.from(requireContext())
         val v = inflter.inflate(R.layout.add_item,null)
         /**set view*/
         val bookNameEt = v.findViewById<EditText>(R.id.sbookName)
         val priceEt = v.findViewById<EditText>(R.id.sbookPrice)
         val authorEt = v.findViewById<EditText>(R.id.sbookAuthor)
-        val addImgBtn = v.findViewById<Button>(R.id.addImageBtn)
 
 
         val addDialog = AlertDialog.Builder(requireContext())
@@ -92,17 +97,23 @@ class BooksFragment : Fragment() {
         addDialog.setPositiveButton("Ok"){
                 dialog,_->
             val bookName = bookNameEt.text.toString()
-            val price = priceEt.text.toString()
+            val priceText = priceEt.text.toString()
             val author = authorEt.text.toString()
 
-            // Yeni kitap burada ekleniyor!!!
+            if(bookName.isBlank() || priceText.isBlank() || author.isBlank()) {
+                Toast.makeText(requireContext(), "Lütfen tüm alanları doldurun.", Toast.LENGTH_SHORT).show()
+            }
+            else {
+                val price = priceText.toDouble()
+                // Yeni kitap burada ekleniyor!!!
+                postBookData(bookName,price,author)
+                //bookList.add(BookData(bookName,price,author,R.drawable.bookimg))
+                //rvAdapter.notifyDataSetChanged()
+                //rvAdapter.notifyItemInserted(bookList.size - 1) //???
+                //Toast.makeText(requireContext(),"Yeni Kitap Başarı ile Eklendi",Toast.LENGTH_SHORT).show()
+                dialog.dismiss()
+            }
 
-
-            //bookList.add(BookData(bookName,price,author,R.drawable.bookimg))
-            //rvAdapter.notifyDataSetChanged()
-            rvAdapter.notifyItemInserted(bookList.size - 1) //???
-            Toast.makeText(requireContext(),"Yeni Kitap Başarı ile Eklendi",Toast.LENGTH_SHORT).show()
-            dialog.dismiss()
         }
         addDialog.setNegativeButton("Cancel"){
                 dialog,_->
@@ -111,7 +122,6 @@ class BooksFragment : Fragment() {
 
         }
 
-        //addImgBtn.setOnClickListener { pickImage() }
         addDialog.create()
         addDialog.show()
     }
@@ -126,60 +136,26 @@ class BooksFragment : Fragment() {
 
     }
 
-    /*private val PICK_IMAGE_REQUEST = 1 // Galeri seçim isteği kodu
+    fun postBookData(bookName : String, price : Double, author : String) {
 
-     // addImageBtn butonuna tıklanınca galeriye gitmek için onClickListener eklenir
-     private fun pickImage(){
-        // Galeriye gitmek için izin kontrolü yapılır
-        if (ContextCompat.checkSelfPermission(
-                requireContext(),
-                Manifest.permission.READ_EXTERNAL_STORAGE
-            ) == PackageManager.PERMISSION_GRANTED
-        ) {
-            // İzin zaten verilmişse galeriye git
-            openGallery()
-        } else {
-            // İzin verilmemişse izin iste
-            ActivityCompat.requestPermissions(
-                this,
-                arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE),
-                PICK_IMAGE_REQUEST
-            )
-        }
-    }
-
-    // İzin isteme sonucunu kontrol etmek için onRequestPermissionsResult metodu eklenir
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
-        if (requestCode == PICK_IMAGE_REQUEST) {
-            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                // İzin verildiyse galeriye git
-                openGallery()
-            } else {
-                // İzin verilmediyse hata mesajı göster
-                Toast.makeText(this, "Gallery permission denied", Toast.LENGTH_SHORT).show()
+        val dataModel = PostBook(bookName, price, author,defaultBookImgURL)
+        val call: Call<Deneme> = apiService.addNewBook(dataModel)
+        call!!.enqueue(object : Callback<Deneme> {
+            override fun onResponse(call: Call<Deneme>, response: Response<Deneme>) {
+                if(response.isSuccessful) {
+                    val newlyCreatedBook = response.body()
+                    Toast.makeText(requireContext(),"Kitap Eklendi", Toast.LENGTH_SHORT).show()
+                    //binding.progressBarBooks.visibility = View.VISIBLE
+                    //requestBooks()
+                    //updateBooks() gibi bir sey yazilabilir veya lifecycle'dan update edilebilir
+                }
+                else {
+                    Toast.makeText(requireContext(),"Kitap eklenemedi", Toast.LENGTH_LONG).show()
+                }
             }
-        }
+            override fun onFailure(call: Call<Deneme>, t: Throwable) {
+                Toast.makeText(requireContext(),"Kitap eklenemedi", Toast.LENGTH_LONG).show()
+            }
+        })
     }
-
-    // Galeriye gitmek için openGallery fonksiyonu tanımlanır
-    private fun openGallery() {
-        val galleryIntent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
-        startActivityForResult(galleryIntent, PICK_IMAGE_REQUEST)
-    }
-
-    // Görsel seçimi sonucunu kontrol etmek için onActivityResult metodu eklenir
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == PICK_IMAGE_REQUEST && resultCode == Activity.RESULT_OK && data != null) {
-            val imageUri = data.data
-            // Seçilen görseli kullan
-            // imageUri değişkeni seçilen görselin URI'sini içerir
-        }
-    }*/
-
-
 }

@@ -1,14 +1,85 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<!-- TO MAKE ALL SCREEN SCROLLABLE -->
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true">
+
+<androidx.constraintlayout.widget.ConstraintLayout
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".DetailFragment">
 
-    <!-- TODO: Update blank fragment layout -->
+    <ImageButton
+        android:id="@+id/backButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:src="@drawable/back"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:src="@drawable/bookimg"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/backButton"
+        tools:layout_editor_absoluteY="26dp" />
+
+    <TextView
+        android:id="@+id/bookNameTV"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Book Name"
+        android:textAppearance="@style/TextviewStyleBookName"
+        app:layout_constraintTop_toBottomOf="@+id/imageView"
+        android:padding="5dp"
+        tools:layout_editor_absoluteX="168dp" />
+
+    <TextView
+        android:id="@+id/authorNameTv"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Author Name"
+        android:textAppearance="@style/TextviewStyleBookName"
+        app:layout_constraintTop_toBottomOf="@+id/bookNameTV"
+        android:padding="5dp"
+        tools:layout_editor_absoluteX="0dp" />
+
     <TextView
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="@string/hello_blank_fragment" />
+        android:layout_height="wrap_content"
+        android:id="@+id/DescText"
+        android:textAppearance="@style/TextviewStyleBookName"
+        app:layout_constraintTop_toBottomOf="@+id/authorNameTv"
+        android:padding="5dp"
+        android:text="Kitap Açıklaması"/>
 
-</FrameLayout>
+
+    <TextView
+        android:id="@+id/description"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="TextView"
+        app:layout_constraintTop_toBottomOf="@+id/DescText"
+        android:padding="10dp"
+        tools:layout_editor_absoluteX="184dp" />
+
+    <ProgressBar
+        android:id="@+id/progressBarDetail"
+        style="?android:attr/progressBarStyle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:visibility="gone"/>
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+</ScrollView>
