@@ -1,5 +1,6 @@
 package com.example.bookstore.api
 
+import com.example.bookstore.model.AuthorsItem
 import com.example.bookstore.model.BookData
 import com.example.bookstore.model.Deneme
 import com.example.bookstore.model.PostBook
@@ -23,6 +24,9 @@ interface BookApiService {
     fun getBookDetail(
         @Path("id") id : Int
     ) : Call<String> // Dönüs tipi degistirilecek
+
+    @GET("authors")
+    fun getAuthors() : Call<List<AuthorsItem>>
 
     @POST("addBook")
     fun addNewBook(@Body newBook : PostBook) : Call<Deneme>//Call<BookData?>?

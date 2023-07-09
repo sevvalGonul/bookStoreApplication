@@ -59,7 +59,7 @@
     <style name="text_style_3">
 
         <item name="android:textSize">
-            20sp
+            15sp
         </item>
 
         <item name="android:textStyle">
@@ -70,9 +70,7 @@
             0.02
         </item>
 
-        <item name="android:textColor">
-            #D80000
-        </item>
+        <item name="android:textColor">#673AB7</item>
 
     </style>
 

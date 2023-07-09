@@ -2,21 +2,20 @@ package com.example.bookstore
 
 import android.app.AlertDialog
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.EditText
-import android.widget.Toast
-import androidx.core.content.ContextCompat
+import android.widget.*
+import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.bookstore.api.BookApiService
 import com.example.bookstore.databinding.FragmentBooksBinding
+import com.example.bookstore.model.AuthorsItem
 import com.example.bookstore.model.BookData
 import com.example.bookstore.model.Deneme
 import com.example.bookstore.model.PostBook
 import com.example.bookstore.view.BookAdapter
+import com.google.android.material.textfield.TextInputLayout
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -50,14 +49,13 @@ class BooksFragment : Fragment() {
 
         requestBooks()
 
-        //var bookList = ArrayList<BookData>()
-        /*for(i in 1..10) {
-            bookList.add(BookData("Anna Karenina", "20", "Tolstoy", R.drawable.anna))
-        }*/
+        val authors : Array<String> = requestAuthors()
+        print(authors)
+
 
         //initRecyclerView(bookList)
 
-        binding.addButton.setOnClickListener { addNewBookInfo() }
+        binding.addButton.setOnClickListener { addNewBookInfo(authors) }
 
     }
 
@@ -66,29 +64,40 @@ class BooksFragment : Fragment() {
         //aşağıda Liste halinde kitaplar alınıyor
         call.enqueue(object: Callback<List<BookData>> {
             override fun onResponse(call: Call<List<BookData>>, response: Response<List<BookData>>) {
-                binding.progressBarBooks.visibility = View.GONE
+                //binding.progressBarBooks.visibility = View.GONE
                 if(response.code() == 200) {
                     var myResponse: List<BookData>? = response.body()
                     print(myResponse)
                     bookList = myResponse!!
                     initRecyclerView(bookList)
+
                 }
             }
 
             override fun onFailure(call: Call<List<BookData>>, t: Throwable) {
-                binding.progressBarBooks.visibility = View.GONE
+                //binding.progressBarBooks.visibility = View.GONE
                 Toast.makeText(requireContext(),"Bir hata oluştu :(", Toast.LENGTH_SHORT).show()
             }
         })
     }
 
-    private fun addNewBookInfo() {
+    private fun addNewBookInfo(authors : Array<String>) {
         val inflter = LayoutInflater.from(requireContext())
         val v = inflter.inflate(R.layout.add_item,null)
         /**set view*/
         val bookNameEt = v.findViewById<EditText>(R.id.sbookName)
         val priceEt = v.findViewById<EditText>(R.id.sbookPrice)
+        // author edit text silinebilir
         val authorEt = v.findViewById<EditText>(R.id.sbookAuthor)
+        val autoText = v.findViewById<AutoCompleteTextView>(R.id.autoCompleteTextView)
+        val textInputLayout = v.findViewById<TextInputLayout>(R.id.textInputLayout)
+
+
+        // !!!! Burada author'ları get ile alacaksın string resource'lardan değil
+        //val authors: Array<String> = resources.getStringArray(R.array.authors)
+        val arrayAdapter = ArrayAdapter(requireContext(),R.layout.dropdown_item,authors)
+        autoText.setAdapter(arrayAdapter)
+
 
 
         val addDialog = AlertDialog.Builder(requireContext())
@@ -98,15 +107,20 @@ class BooksFragment : Fragment() {
                 dialog,_->
             val bookName = bookNameEt.text.toString()
             val priceText = priceEt.text.toString()
-            val author = authorEt.text.toString()
+            //val author = authorEt.text.toString()
+
+            val author: String = autoText.text.toString()
 
             if(bookName.isBlank() || priceText.isBlank() || author.isBlank()) {
                 Toast.makeText(requireContext(), "Lütfen tüm alanları doldurun.", Toast.LENGTH_SHORT).show()
             }
             else {
                 val price = priceText.toDouble()
+
+                Toast.makeText(requireContext(),author,Toast.LENGTH_LONG).show()
+
                 // Yeni kitap burada ekleniyor!!!
-                postBookData(bookName,price,author)
+                //postBookData(bookName,price,author)
                 //bookList.add(BookData(bookName,price,author,R.drawable.bookimg))
                 //rvAdapter.notifyDataSetChanged()
                 //rvAdapter.notifyItemInserted(bookList.size - 1) //???
@@ -157,5 +171,41 @@ class BooksFragment : Fragment() {
                 Toast.makeText(requireContext(),"Kitap eklenemedi", Toast.LENGTH_LONG).show()
             }
         })
+    }
+
+    fun requestAuthors() : Array<String> {
+        val call = apiService.getAuthors()
+        //var authors = arrayOf<String>()
+        var myResponse = listOf<AuthorsItem>()
+        call.enqueue(object : Callback<List<AuthorsItem>> {
+            override fun onResponse(
+                call: Call<List<AuthorsItem>>,
+                response: Response<List<AuthorsItem>>
+            ) {
+                if(response.isSuccessful) {
+                    binding.progressBarBooks.visibility = View.GONE
+                    myResponse = response.body()!!
+                    print(myResponse!!)
+                    //authors =  getAuthorsArray(myResponse!!)
+                }
+            }
+
+            override fun onFailure(call: Call<List<AuthorsItem>>, t: Throwable) {
+                Toast.makeText(requireContext(),"Hata",Toast.LENGTH_SHORT).show()
+                binding.progressBarBooks.visibility = View.GONE
+            }
+
+        })
+        return getAuthorsArray(myResponse)
+    }
+
+    fun getAuthorsArray(list : List<AuthorsItem>) : Array<String> {
+        val stringArray = arrayListOf<String>()
+        for (obj in list) {
+            // Nesnenin içindeki belirli özelliğe erişme
+            val name = obj.name
+            stringArray.add(name)
+        }
+        return stringArray.toTypedArray()
     }
 }
